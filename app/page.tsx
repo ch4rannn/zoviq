@@ -1,0 +1,83 @@
+// ==================================
+// ZOVIQ Homepage
+// ==================================
+// The main landing page visitors see.
+// Composed of multiple sections defined in the design system.
+//
+// DATA SOURCE:
+// Currently using mock data for development.
+// When Shopify credentials are added to .env.local, replace
+// the mock imports with real Shopify API calls:
+//   import { getProducts } from '@/lib/shopify';
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'ZOVIQ — Premium Streetwear | Oversized Tees, Graphic Tees & More',
+  description:
+    'Shop ZOVIQ — India\'s premium Gen-Z streetwear brand. Oversized t-shirts, graphic tees, minimalist styles. Free shipping over ₹999. Bold. Minimal. Unapologetic.',
+  alternates: {
+    canonical: '/',
+  },
+};
+
+import HeroSection from '@/components/home/HeroSection';
+import FeaturedCollection from '@/components/home/FeaturedCollection';
+import BrandStatement from '@/components/home/BrandStatement';
+import LifestyleBanner from '@/components/home/LifestyleBanner';
+import SocialSection from '@/components/home/SocialSection';
+import Newsletter from '@/components/home/Newsletter';
+import {
+  MOCK_PRODUCTS,
+  getMockNewArrivals,
+  getMockBestSellers,
+} from '@/lib/mock-data';
+
+export default function HomePage() {
+  // Using mock data for now
+  // TODO: Replace with Shopify API calls when credentials are set up:
+  // const products = await getProducts({ first: 8 });
+  const allProducts = MOCK_PRODUCTS;
+  const newArrivals = getMockNewArrivals();
+  const bestSellers = getMockBestSellers();
+
+  return (
+    <>
+      {/* 1. Hero — Full-screen hero with CTA */}
+      <HeroSection />
+
+      {/* 2. Featured Collection — All products */}
+      <FeaturedCollection
+        title="THE COLLECTION"
+        products={allProducts}
+        collectionHandle="all"
+      />
+
+      {/* 3. Brand Statement — "ZOVIQ is not just clothing..." */}
+      <BrandStatement />
+
+      {/* 4. New Arrivals */}
+      <FeaturedCollection
+        title="NEW ARRIVALS"
+        products={newArrivals}
+        collectionHandle="new-arrivals"
+      />
+
+      {/* 5. Lifestyle Banner — Full-width image */}
+      <LifestyleBanner />
+
+      {/* 6. Best Sellers */}
+      <FeaturedCollection
+        title="BEST SELLERS"
+        products={bestSellers}
+        collectionHandle="best-sellers"
+      />
+
+      {/* 7. Social Section — Instagram grid */}
+      <SocialSection />
+
+      {/* 8. Newsletter — Email signup */}
+      <Newsletter />
+    </>
+  );
+}

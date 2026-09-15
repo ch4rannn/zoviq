@@ -1,0 +1,12 @@
+# ==================================
+# ZOVIQ — robots.txt
+# ==================================
+# Tells search engines what they can and cannot crawl.
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://zoviq.com/sitemap.xml
