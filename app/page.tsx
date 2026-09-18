@@ -5,10 +5,7 @@
 // Composed of multiple sections defined in the design system.
 //
 // DATA SOURCE:
-// Currently using mock data for development.
-// When Shopify credentials are added to .env.local, replace
-// the mock imports with real Shopify API calls:
-//   import { getProducts } from '@/lib/shopify';
+// Fetches live products from the Shopify Storefront API.
 
 import type { Metadata } from 'next';
 
