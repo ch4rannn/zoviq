@@ -4,7 +4,7 @@
 // Displays products in a specific collection (e.g. New Arrivals).
 
 import { notFound } from 'next/navigation';
-import { MOCK_PRODUCTS, getMockNewArrivals, getMockBestSellers } from '@/lib/mock-data';
+import { getCollection, getProducts } from '@/lib/shopify';
 import ProductGrid from '@/components/product/ProductGrid';
 
 interface CollectionPageProps {
@@ -21,20 +21,28 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
   let title = '';
   let description = '';
 
+  // For specific hardcoded routes without actual Shopify collections
   if (handle === 'new-arrivals') {
-    products = getMockNewArrivals();
+    products = await getProducts({ first: 20, sortKey: 'CREATED_AT', reverse: true });
     title = 'New Arrivals';
     description = 'The latest streetwear drops from ZOVIQ.';
   } else if (handle === 'best-sellers') {
-    products = getMockBestSellers();
+    products = await getProducts({ first: 20, sortKey: 'BEST_SELLING' });
     title = 'Best Sellers';
     description = 'Our most popular styles, chosen by the streets.';
   } else if (handle === 'all') {
-    products = MOCK_PRODUCTS;
+    products = await getProducts({ first: 100 });
     title = 'All Products';
     description = 'Explore the full ZOVIQ collection.';
   } else {
-    notFound();
+    // Try to fetch from Shopify collections
+    const collection = await getCollection(handle);
+    if (!collection) {
+      notFound();
+    }
+    products = collection.products;
+    title = collection.title;
+    description = collection.description || '';
   }
 
   return (

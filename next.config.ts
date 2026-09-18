@@ -4,9 +4,9 @@ const nextConfig: NextConfig = {
   // ============================================
   // CLOUDFLARE PAGES DEPLOYMENT CONFIG
   // ============================================
-  // Static export generates pure HTML/CSS/JS files
-  // that Cloudflare Pages can serve directly — no Node.js server needed.
-  output: "export",
+  // If you are using NextAuth and Server Actions, you CANNOT use static export.
+  // Deploy using Vercel, or use @cloudflare/next-on-pages if deploying to Cloudflare.
+  // output: "export",
 
   // Next.js Image Optimization requires a Node server,
   // which Cloudflare Pages doesn't have. This tells Next.js

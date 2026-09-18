@@ -7,20 +7,27 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
-import { MOCK_PRODUCTS } from '@/lib/mock-data';
+import { Suspense, useState, useEffect } from 'react';
+import { searchProducts, getProducts } from '@/lib/shopify';
 import ProductGrid from '@/components/product/ProductGrid';
 
 function SearchResults() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
+  const [results, setResults] = useState<any[]>([]);
 
-  // Very basic mock search implementation (case-insensitive title match)
-  const results = searchQuery
-    ? MOCK_PRODUCTS.filter((p) =>
-        p.title.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : MOCK_PRODUCTS; // Show all products if no query
+  useEffect(() => {
+    async function fetchResults() {
+      if (searchQuery) {
+        const res = await searchProducts(searchQuery);
+        setResults(res);
+      } else {
+        const res = await getProducts({ first: 20 });
+        setResults(res);
+      }
+    }
+    fetchResults();
+  }, [searchQuery]);
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 py-12 md:py-20">

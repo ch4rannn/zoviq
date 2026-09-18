@@ -6,7 +6,7 @@
 
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { MOCK_PRODUCTS } from '@/lib/mock-data';
+import { getProduct, getProducts } from '@/lib/shopify';
 import { formatPrice } from '@/lib/utils';
 import ProductImageGallery from '@/components/product/ProductImageGallery';
 import ProductForm from '@/components/product/ProductForm';
@@ -16,7 +16,7 @@ import Badge from '@/components/ui/Badge';
 // Dynamic metadata — unique title & description per product
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const resolvedParams = await params;
-  const product = MOCK_PRODUCTS.find((p) => p.handle === resolvedParams.handle);
+  const product = await getProduct(resolvedParams.handle);
 
   if (!product) return { title: 'Product Not Found' };
 
@@ -39,9 +39,6 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   };
 }
 
-// TODO: Replace with real Shopify fetch when .env is configured
-// import { getProduct, getProducts } from '@/lib/shopify';
-
 interface ProductPageProps {
   params: Promise<{
     handle: string;
@@ -51,15 +48,16 @@ interface ProductPageProps {
 export default async function ProductPage({ params }: ProductPageProps) {
   const resolvedParams = await params;
   
-  // Using mock data for development
-  const product = MOCK_PRODUCTS.find((p) => p.handle === resolvedParams.handle);
+  // Fetch from live Shopify
+  const product = await getProduct(resolvedParams.handle);
 
   if (!product) {
     notFound();
   }
 
   // Get some "You Might Also Like" products (excluding the current one)
-  const relatedProducts = MOCK_PRODUCTS.filter((p) => p.id !== product.id).slice(0, 4);
+  const allProducts = await getProducts({ first: 10 });
+  const relatedProducts = allProducts.filter((p) => p.id !== product.id).slice(0, 4);
 
   return (
     <>
@@ -122,9 +120,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
   );
 }
 
-// Generate static params for mock data so the pages load instantly in dev
 export async function generateStaticParams() {
-  return MOCK_PRODUCTS.map((product) => ({
-    handle: product.handle,
-  }));
+  // Try to pre-render top products, or just return empty for dynamic routing
+  try {
+    const products = await getProducts({ first: 10 });
+    return products.map((product) => ({
+      handle: product.handle,
+    }));
+  } catch (error) {
+    return [];
+  }
 }

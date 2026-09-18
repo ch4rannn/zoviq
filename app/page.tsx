@@ -27,19 +27,13 @@ import BrandStatement from '@/components/home/BrandStatement';
 import LifestyleBanner from '@/components/home/LifestyleBanner';
 import SocialSection from '@/components/home/SocialSection';
 import Newsletter from '@/components/home/Newsletter';
-import {
-  MOCK_PRODUCTS,
-  getMockNewArrivals,
-  getMockBestSellers,
-} from '@/lib/mock-data';
+import { getProducts } from '@/lib/shopify';
 
-export default function HomePage() {
-  // Using mock data for now
-  // TODO: Replace with Shopify API calls when credentials are set up:
-  // const products = await getProducts({ first: 8 });
-  const allProducts = MOCK_PRODUCTS;
-  const newArrivals = getMockNewArrivals();
-  const bestSellers = getMockBestSellers();
+export default async function HomePage() {
+  // Fetch live data from Shopify Storefront API
+  const allProducts = await getProducts({ first: 8 });
+  const newArrivals = await getProducts({ first: 4, sortKey: 'CREATED_AT', reverse: true });
+  const bestSellers = await getProducts({ first: 4, sortKey: 'BEST_SELLING' });
 
   return (
     <>

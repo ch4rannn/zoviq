@@ -9,8 +9,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { Cart, CartLine, CartLineInput } from '@/types/shopify';
-import { MOCK_PRODUCTS } from '@/lib/mock-data';
+import type { Cart, CartLineInput } from '@/types/shopify';
+import { createCart, addToCart as apiAddToCart, updateCart, removeFromCart as apiRemoveFromCart, getCart } from '@/lib/shopify';
 
 interface CartContextType {
   cart: Cart | null;
@@ -31,157 +31,68 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Initialize cart from localStorage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem('zoviq_cart');
-    if (savedCart) {
-      try {
-        setCart(JSON.parse(savedCart));
-      } catch (e) {
-        console.error('Failed to parse cart', e);
+    async function initCart() {
+      const savedCartId = localStorage.getItem('zoviq_cart_id');
+      if (savedCartId) {
+        try {
+          const existingCart = await getCart(savedCartId);
+          if (existingCart) {
+            setCart(existingCart);
+            return;
+          }
+        } catch (e) {
+          console.error('Failed to fetch existing cart', e);
+        }
       }
-    } else {
-      // Create empty default cart
-      const emptyCart: Cart = {
-        id: 'mock-cart-id',
-        checkoutUrl: '/checkout',
-        totalQuantity: 0,
-        cost: {
-          subtotalAmount: { amount: '0', currencyCode: 'INR' },
-          totalAmount: { amount: '0', currencyCode: 'INR' },
-          totalTaxAmount: null,
-        },
-        lines: [],
-      };
-      setCart(emptyCart);
+      
+      // If no saved cart or cart is expired, create a new one
+      try {
+        const newCart = await createCart();
+        setCart(newCart);
+        localStorage.setItem('zoviq_cart_id', newCart.id);
+      } catch (e) {
+        console.error('Failed to create cart', e);
+      }
     }
-  }, []);
 
-  // Sync to localStorage whenever cart changes
-  useEffect(() => {
-    if (cart) {
-      localStorage.setItem('zoviq_cart', JSON.stringify(cart));
-    }
-  }, [cart]);
+    initCart();
+  }, []);
 
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
 
-  // Re-calculate cart totals after any modification
-  const calculateTotals = (lines: CartLine[]): Cart => {
-    let totalQuantity = 0;
-    let totalAmount = 0;
-
-    lines.forEach((line) => {
-      totalQuantity += line.quantity;
-      totalAmount += parseFloat(line.cost.totalAmount.amount);
-    });
-
-    return {
-      id: cart?.id || 'mock-cart-id',
-      checkoutUrl: '/checkout',
-      totalQuantity,
-      cost: {
-        subtotalAmount: { amount: totalAmount.toString(), currencyCode: 'INR' },
-        totalAmount: { amount: totalAmount.toString(), currencyCode: 'INR' },
-        totalTaxAmount: null,
-      },
-      lines,
-    };
-  };
-
   const addToCart = async (lines: CartLineInput[]) => {
     if (!cart) return;
 
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    // MOCK IMPLEMENTATION: Add lines to cart
-    // In production, you would call Shopify API createCart or addToCart here
-    
-    let newLines = [...cart.lines];
-
-    lines.forEach((inputLine) => {
-      // Find the mock product variant
-      const product = MOCK_PRODUCTS.find((p) =>
-        p.variants.some((v) => v.id === inputLine.merchandiseId)
-      );
-
-      if (!product) return;
-      const variant = product.variants.find((v) => v.id === inputLine.merchandiseId);
-      if (!variant) return;
-
-      // Check if line already exists in cart
-      const existingLineIndex = newLines.findIndex(
-        (l) => l.merchandise.id === variant.id
-      );
-
-      if (existingLineIndex >= 0) {
-        // Update quantity
-        newLines[existingLineIndex].quantity += inputLine.quantity;
-        newLines[existingLineIndex].cost.totalAmount.amount = (
-          parseFloat(variant.price.amount) * newLines[existingLineIndex].quantity
-        ).toString();
-      } else {
-        // Add new line
-        newLines.push({
-          id: `line-${Date.now()}-${Math.random()}`, // Mock line ID
-          quantity: inputLine.quantity,
-          cost: {
-            totalAmount: {
-              amount: (parseFloat(variant.price.amount) * inputLine.quantity).toString(),
-              currencyCode: 'INR',
-            },
-          },
-          merchandise: {
-            id: variant.id,
-            title: variant.title,
-            selectedOptions: variant.selectedOptions,
-            product: {
-              title: product.title,
-              handle: product.handle,
-              images: product.images,
-            },
-          },
-        });
-      }
-    });
-
-    setCart(calculateTotals(newLines));
-    openCart(); // Automatically open cart when adding
+    try {
+      const updatedCart = await apiAddToCart(cart.id, lines);
+      setCart(updatedCart);
+      openCart();
+    } catch (e) {
+      console.error('Failed to add to cart', e);
+    }
   };
 
   const updateCartItem = async (lineId: string, quantity: number) => {
     if (!cart) return;
     
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    
-    const newLines = cart.lines.map((line) => {
-      if (line.id === lineId) {
-        // Calculate single item price by dividing total by quantity
-        const unitPrice = parseFloat(line.cost.totalAmount.amount) / line.quantity;
-        return {
-          ...line,
-          quantity,
-          cost: {
-            totalAmount: {
-              amount: (unitPrice * quantity).toString(),
-              currencyCode: 'INR',
-            },
-          },
-        };
-      }
-      return line;
-    });
-
-    setCart(calculateTotals(newLines));
+    try {
+      const updatedCart = await updateCart(cart.id, [{ id: lineId, quantity }]);
+      setCart(updatedCart);
+    } catch (e) {
+      console.error('Failed to update cart item', e);
+    }
   };
 
   const removeFromCart = async (lineId: string) => {
     if (!cart) return;
     
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    
-    const newLines = cart.lines.filter((line) => line.id !== lineId);
-    setCart(calculateTotals(newLines));
+    try {
+      const updatedCart = await apiRemoveFromCart(cart.id, [lineId]);
+      setCart(updatedCart);
+    } catch (e) {
+      console.error('Failed to remove from cart', e);
+    }
   };
 
   return (

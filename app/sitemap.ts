@@ -6,11 +6,11 @@
 
 import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/constants';
-import { MOCK_PRODUCTS } from '@/lib/mock-data';
+import { getProducts } from '@/lib/shopify';
 
 export const dynamic = 'force-static';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_URL;
 
   // Static pages
@@ -54,7 +54,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // Product pages
-  const productPages: MetadataRoute.Sitemap = MOCK_PRODUCTS.map((product) => ({
+  const products = await getProducts({ first: 100 });
+  const productPages: MetadataRoute.Sitemap = products.map((product) => ({
     url: `${baseUrl}/product/${product.handle}`,
     lastModified: new Date(product.updatedAt),
     changeFrequency: 'weekly' as const,

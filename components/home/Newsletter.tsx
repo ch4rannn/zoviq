@@ -2,7 +2,7 @@
 // Newsletter Section
 // ==================================
 // Email signup section — dark background, CTA to join the community.
-// For MVP, this is a visual placeholder.
+// Visual-only for MVP. Emails are not stored anywhere yet.
 // Real email collection can be added later via Shopify or Mailchimp.
 
 'use client'; // Needs state for form handling
@@ -16,11 +16,10 @@ export default function Newsletter() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
     if (!email) return;
 
-    // TODO: Connect to Shopify customer list or email service
-    // For now, just show success message
+    // For now, just show success state.
+    // In the future, integrate with Shopify Marketing or Mailchimp.
     setIsSubmitted(true);
     setEmail('');
   }

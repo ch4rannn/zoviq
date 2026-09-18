@@ -118,6 +118,9 @@ const jsonLd = {
   ],
 };
 
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
 // ------------------------------------
 // Root Layout
 // ------------------------------------
@@ -135,6 +138,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <StorefrontShell>
           {children}
         </StorefrontShell>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
