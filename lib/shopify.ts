@@ -50,6 +50,7 @@ async function shopifyFetch<T>(
 ): Promise<T> {
   const response = await fetch(endpoint, {
     method: 'POST',
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
       'X-Shopify-Storefront-Access-Token': storefrontAccessToken,

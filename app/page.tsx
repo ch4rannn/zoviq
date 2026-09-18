@@ -9,6 +9,8 @@
 
 import type { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'ZOVIQ — Premium Streetwear | Oversized Tees, Graphic Tees & More',
   description:

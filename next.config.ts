@@ -4,9 +4,7 @@ const nextConfig: NextConfig = {
   // ============================================
   // CLOUDFLARE PAGES DEPLOYMENT CONFIG
   // ============================================
-  // If you are using NextAuth and Server Actions, you CANNOT use static export.
-  // Deploy using Vercel, or use @cloudflare/next-on-pages if deploying to Cloudflare.
-  output: "export",
+  // output: "export", // Disabled for SSR / Live data fetching
 
   // Next.js Image Optimization requires a Node server,
   // which Cloudflare Pages doesn't have. This tells Next.js

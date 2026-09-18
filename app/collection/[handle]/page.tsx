@@ -65,11 +65,4 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
   );
 }
 
-// REQUIRED for static export — tells Next.js which collection pages to pre-render
-export function generateStaticParams() {
-  return [
-    { handle: 'new-arrivals' },
-    { handle: 'best-sellers' },
-    { handle: 'all' },
-  ];
-}
+export const dynamic = 'force-dynamic';
