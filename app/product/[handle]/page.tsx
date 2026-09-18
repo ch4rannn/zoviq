@@ -124,10 +124,15 @@ export async function generateStaticParams() {
   // Try to pre-render top products, or just return empty for dynamic routing
   try {
     const products = await getProducts({ first: 10 });
+    
+    if (!products || products.length === 0) {
+      return [{ handle: 'coming-soon' }];
+    }
+
     return products.map((product) => ({
       handle: product.handle,
     }));
   } catch (error) {
-    return [];
+    return [{ handle: 'coming-soon' }];
   }
 }
